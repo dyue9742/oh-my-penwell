@@ -1,0 +1,31 @@
+{
+  "name": "penwell-mvh",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/three": "^0.159.0",
+    "axios": "^1.6.2",
+    "d3": "^7.8.5",
+    "jose": "^5.2.0",
+    "lil-gui": "^0.19.1",
+    "next": "14.0.4",
+    "pdfjs-dist": "^4.0.269",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-dropzone": "^14.2.3",
+    "three": "^0.159.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5"
+  }
+}
