@@ -2,112 +2,131 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"regexp"
 
-	M "4jFade/internal/models"
+	"storaph/internal/types"
+	"storaph/internal/utils"
 
 	"github.com/jackc/pgx/v5"
 )
 
-const DSN = "dbname=penwell-store password=store host=172.17.0.1 port=5432 sslmode=disable"
+const StoreUri = "postgres://penwell:writewell@localhost:5432/store?sslmode=disable"
 
-type PostgreSql struct {
+type Store struct {
 	conn *pgx.Conn
 }
 
-func (p *PostgreSql) Init(ctx context.Context) error {
-	return p.createUserTable(ctx)
-}
-
-func NewPostgreSql(ctx context.Context) (*PostgreSql, error) {
-	conn, err := pgx.Connect(ctx, DSN)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+func NewStore(ctx context.Context) (*Store, error) {
+	c, e := pgx.Connect(ctx, StoreUri)
+	if e != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "unable to connect to database: %v\n", e)
 		os.Exit(1)
 	}
-	if err := conn.Ping(ctx); err != nil {
-		return nil, err
-	}
-	defer conn.Close(ctx)
-	return &PostgreSql{conn: conn}, nil
+
+	p := &Store{conn: c}
+
+	return p, nil
 }
 
-func (p *PostgreSql) createUserTable(ctx context.Context) error {
-	query := `CREATE TABLE IF NOT EXISTS user (
-		id SERIAL PRIMARY KEY,
-		created_at TIMESTAMP,
-		f_name VARCHAR(60) NOT NULL,
-		l_name VARCHAR(60) NOT NULL,
-		email VARCHAR(60) NOT NULL,
-		oauth VARCHAR(60)
-		)`
+func (p *Store) firstLaunchCheck(ctx context.Context) bool {
+	exist, e := p.conn.Query(ctx, utils.TableExistQuery)
+	utils.GridPrint("Exist?", exist.RawValues())
 
-	_, err := p.conn.Query(ctx, query)
-	return err
-}
-
-func (p *PostgreSql) CreateUser(ctx context.Context, user *M.User) error {
-	query := `
-		insert into user (created_at, f_name, l_name, email, )
-		values ($1, $2, $3, $4)
-	`
-
-	res, err := p.conn.Query(ctx, query, user.CreatedAt, user.Firstname, user.Lastname, user.Email)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("Created %+v.\n", res)
-	return nil
-}
-
-func (p *PostgreSql) DeleteUser(ctx context.Context, id int) error {
-	return nil
-}
-
-func (p *PostgreSql) UpdateUser(ctx context.Context, id int) error {
-	return nil
-}
-
-func (p *PostgreSql) GetUsers(ctx context.Context) ([]*M.User, error) {
-	rows, err := p.conn.Query(ctx, "SELECT * FROM user")
-	if err != nil {
-		return nil, err
-	}
-
-	users := []*M.User{}
-
-	for rows.Next() {
-		user, err := scan2User(rows)
-		if err != nil {
-			return nil, err
+	if e != nil {
+		nothing, _ := regexp.Match(`does\nnot\nexist.*`, []byte(e.Error()))
+		if nothing && len(exist.RawValues()) == 0 {
+			return true
 		}
-		users = append(users, user)
 	}
 
-	return users, nil
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		_ = conn.Close(ctx)
+	}(p.conn, ctx)
+
+	return false
 }
 
-func (p *PostgreSql) GetUserByID(ctx context.Context, id int) (*M.User, error) {
-	rows, err := p.conn.Query(ctx, "SELECT * FROM user WHERE id = $1", id)
-	if err != nil {
-		return nil, err
+func (p *Store) createUserTable(ctx context.Context) error {
+	query := utils.TableCreateUserQuery
+
+	_, e := p.conn.Query(ctx, query)
+
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		_ = conn.Close(ctx)
+	}(p.conn, ctx)
+
+	return e
+}
+
+func (p *Store) NewUserRequest(ctx context.Context, user *types.PushUser) error {
+	query := utils.NewUserQuery
+
+	r, e := p.conn.Query(ctx, query, user.CreatedAt, user.Firstname, user.Lastname, user.Username, user.Email)
+	if e != nil {
+		return e
+	}
+
+	fmt.Printf("created %+v.\n", r)
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		_ = conn.Close(ctx)
+	}(p.conn, ctx)
+
+	return nil
+}
+
+func (p *Store) DeleteUserRequest(ctx context.Context, id uint64) error {
+	return nil
+}
+
+func (p *Store) UpdateUserRequest(ctx context.Context, id uint64) error {
+	return nil
+}
+
+func (p *Store) GetUserByIdRequest(ctx context.Context, id uint64) (*types.PullUser, error) {
+	rows, e := p.conn.Query(ctx, `SELECT * FROM 'user' WHERE id = $1`, id)
+	if e != nil {
+		return nil, e
 	}
 
 	for rows.Next() {
-		return scan2User(rows)
+		return scan2(rows)
 	}
 
-	return nil, fmt.Errorf("user %d not found", id)
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		_ = conn.Close(ctx)
+	}(p.conn, ctx)
+
+	return nil, errors.New("so bad")
 }
 
-func scan2User(rows pgx.Rows) (*M.User, error) {
-	user := new(M.User)
-	err := rows.Scan(
-		&user.CreatedAt,
-		&user.Firstname,
-		&user.Lastname,
-		&user.Email)
-	return user, err
+func (p *Store) GetAllUsersByAdminRequest(ctx context.Context) ([]*types.PullUser, error) {
+	rows, e := p.conn.Query(ctx, `SELECT * FROM 'user'`)
+	if e != nil {
+		return nil, e
+	}
+
+	var allUsers []*types.PullUser
+
+	for rows.Next() {
+		user, e := scan2(rows)
+		if e != nil {
+			return nil, e
+		}
+		allUsers = append(allUsers, user)
+	}
+
+	defer func(conn *pgx.Conn, ctx context.Context) {
+		_ = conn.Close(ctx)
+	}(p.conn, ctx)
+
+	return allUsers, nil
+}
+
+func scan2(rows pgx.Rows) (*types.PullUser, error) {
+	user := new(types.PullUser)
+	e := rows.Scan(&user.CreatedAt, &user.Firstname, &user.Lastname, &user.Username, &user.Email, &user.Id)
+	return user, e
 }

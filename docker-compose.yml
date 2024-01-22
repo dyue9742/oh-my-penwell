@@ -1,0 +1,25 @@
+services:
+  graph:
+    image: neo4j:latest
+    restart: always
+    hostname: graph
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - ./.local/data/graph:/var/_lib/graph/data
+      - ./.local/logs/graph:/var/_lib/graph/logs
+      - ./.local/conf/graph:/var/_lib/graph/conf
+    environment:
+      - NEO4J_AUTH=neo4j/writewell
+  store:
+    image: postgres:latest
+    restart: always
+    volumes:
+      - ./.local/data/store:/var/_lib/store/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=store
+      - POSTGRES_USER=penwell
+      - POSTGRES_PASSWORD=writewell

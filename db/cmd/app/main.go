@@ -1,32 +1,49 @@
 package main
 
 import (
-	Database "4jFade/internal/database"
-	Utils "4jFade/internal/helpers"
 	"context"
+	"fmt"
 	"log"
-	"time"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"storaph/internal/controller"
+	"storaph/internal/database"
 )
 
-var initVal = 1
+func pgxSetup(ctx context.Context, cancelFunc context.CancelFunc) (*database.Store, error) {
+	store, e := database.NewStore(ctx)
+	if e != nil {
+		cancelFunc()
+		return nil, e
+	}
+
+	fmt.Printf("store connected:\n%+v\n", *store)
+	return store, nil
+}
+
+func quitGracefully() {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	signal.Notify(sig, syscall.SIGTERM)
+	go func() {
+		<- sig
+		fmt.Println("Quit Gracefully...")
+		os.Exit(0)
+	}()
+}
 
 func main() {
+
+	go quitGracefully()
+
 	ctx, cancelFunc := context.WithCancel(context.Background())
-
-	graph := &Database.Neo4jGraph{}
-	go func() {
-		time.Sleep(time.Minute)
-		cancelFunc()
-	}()
-	if err := graph.HelloWorld(ctx); err != nil {
-		log.Fatal(err)
+	store, e := pgxSetup(ctx, cancelFunc)
+	if e != nil {
+		log.Fatal(e)
 	}
 
-	store, err := Database.NewPostgreSql(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	server := Utils.NewApiServer(":9980", *store, ctx)
-	server.Run()
+	s := controller.NewServer(":9980", *store, ctx)
+	s.Run()
 }
