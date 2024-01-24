@@ -28,7 +28,7 @@ func quitGracefully() {
 	signal.Notify(sig, os.Interrupt)
 	signal.Notify(sig, syscall.SIGTERM)
 	go func() {
-		<- sig
+		<-sig
 		fmt.Println("Quit Gracefully...")
 		os.Exit(0)
 	}()

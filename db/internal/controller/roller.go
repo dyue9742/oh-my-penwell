@@ -2,7 +2,8 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -27,9 +28,10 @@ const (
 func EnableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, PATCH, DELETE")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-
+		w.Header().Set("Cache-Control", "no-cache,no-store,max-age=0,must-revalidate")
+		w.Header().Set("X-Frame-Options", "SAMEORIGIN")
+		w.Header().Set("X-XSS-Protection", "1;mode=block")
 		next.ServeHTTP(w, r)
 	})
 }
@@ -52,8 +54,8 @@ func (s *Server) Run() {
 	router := mux.NewRouter()
 	router.Use(EnableCORS)
 
-	router.HandleFunc(ADMIN, Mi.MakeFunx(s.handleAdminRequest)).Methods("POST")
-	router.HandleFunc(GET, Mi.MakeFunx(s.handleGetUserRequest)).Methods("POST")
+	router.HandleFunc(ADMIN, Mi.MakeFunx(s.handleAdminRequest)).Methods("GET")
+	router.HandleFunc(GET, Mi.MakeFunx(s.handleGetUserRequest)).Methods("GET")
 	router.HandleFunc(NEW, Mi.MakeFunx(s.handleNewUserRequest)).Methods("POST")
 	router.HandleFunc(UPDATE, Mi.MakeFunx(s.handleUpdateUserRequest)).Methods("PATCH")
 	router.HandleFunc(DELETE, Mi.MakeFunx(s.handleDeleteUserRequest)).Methods("DELETE")
@@ -64,17 +66,32 @@ func (s *Server) Run() {
 }
 
 func (s *Server) handleGetUserRequest(w http.ResponseWriter, r *http.Request) error {
-	Ut.LinePrint("Get User; todo!()")
-	return nil
+	Ut.LinePrint("Get User; Let's Go!()")
+	if r.Method != "GET" {
+		return Mi.WriteJ(w, http.StatusBadRequest, errors.New("so bad"))
+	}
+
+	defer func(r *http.Request) {
+		_ = r.Body.Close()
+	}(r)
+
+	getUser := new(Ty.PullUser)
+	if e := getUser.Read(r); e != nil {
+		return e
+	}
+	fmt.Printf("%+v.\n", getUser)
+
+	return Mi.WriteJ(w, http.StatusOK, getUser)
 }
 
 func (s *Server) handleNewUserRequest(w http.ResponseWriter, r *http.Request) error {
 	Ut.LinePrint("New User; Let's Go!")
 
 	createUser := new(Ty.PushUser)
-	if e := json.NewDecoder(r.Body).Decode(createUser); e != nil {
+	if e := createUser.Read(r); e != nil {
 		return e
 	}
+	fmt.Printf("%+v.\n", createUser)
 
 	user := Ty.NewUser(createUser.Firstname, createUser.Lastname, createUser.Username, createUser.Email)
 	if e := s.store.NewUserRequest(s.ctx, user); e != nil {

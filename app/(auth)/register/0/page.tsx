@@ -19,10 +19,10 @@ const SignIn = ({ inst }: { inst: AxiosInstance }) => {
   inst.interceptors.request.use(
     (config) => {
       config.signal = controller.signal;
-			config.params = {
-				email: email.current?.value,
-				passw: passw.current?.value,
-			}
+      config.params = {
+        email: email.current?.value,
+        passw: passw.current?.value,
+      };
       return config;
     },
     (error) => {
