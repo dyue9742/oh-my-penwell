@@ -1,3 +1,5 @@
+"use client";
+
 import { useDropzone } from "react-dropzone";
 import { useCallback, useState } from "react";
 import { DeleteIcon, ShipmentIcon } from "./svg";

@@ -14,14 +14,23 @@ export const Upright: React.FC<IUprightProps> = ({ router, closeMenu }) => {
     <div
       ref={ref}
       style={{
+        backdropFilter: "blur(16px)",
+        border: "1px solid #393e46",
+        borderRadius: "4px",
+        color: "#cecece",
+        top: "128px",
+        width: "256px",
+        zIndex: 30,
         display: "flex",
         flexDirection: "column",
+        position: "absolute",
+        fontFamily: "Josefin Sans",
         justifyContent: "space-between",
       }}
     >
       <p>This is a vertical page, click and appear.</p>
       <CurrentUser />
-      <RouterBar router={router} />
+      <RouterBar router={router} closeMenu={closeMenu} />
     </div>
   );
 };

@@ -1,0 +1,15 @@
+.btn-basic {
+  background-color: #191919;
+  cursor: pointer;
+  border: none;
+  margin: 0;
+  outline: none;
+  padding: 4px 8px;
+  overflow: hidden;
+  user-select: none;
+  font-family: "M PLUS Code Latin";
+}
+
+.btn-basic:active {
+  opacity: 0.3;
+}

@@ -1,7 +1,10 @@
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { UploadMenu } from "./upload_box";
+"use client";
+
+import "@/app/global.css";
 import { Upright } from "./dropdown";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { UploadMenu } from "./upload_box";
 
 const initUpload = {
   show: false,
@@ -28,7 +31,7 @@ export const Horizon = () => {
 
   return (
     <>
-      {uploadIsOpen && (
+      {uploadIsOpen.show && (
         <UploadMenu
           x={uploadIsOpen.x}
           y={uploadIsOpen.y}
@@ -38,23 +41,76 @@ export const Horizon = () => {
 
       {showMenu && <Upright router={router} closeMenu={handleMenu} />}
 
-      <button style={{ position: "absolute" }}>p</button>
-
-      <div
+      <button
         style={{
-          display: "inline-flex",
-          flexGrow: 1,
-          alignItems: "center",
-          justifyContent: "space-between",
+          fontFamily: "Josefin Sans",
+          color: "#ececec",
+          width: "128px",
+          height: "128px",
+          position: "absolute",
+          fontSize: "128px",
+          userSelect: "none",
+          border: "2px solid #ececec",
+          backgroundColor: "#2a2a2a",
+        }}
+        onClick={() => {
+          handleMenu;
         }}
       >
-        <div style={{ display: "inline-flex", flexDirection: "row-reverse" }}>
-          <p style={{ fontFamily: "Josefin Sans" }}>
-            <u>PenWell,WriteWell</u>
-          </p>
-          <button onClick={() => router.push("/")}>General</button>
-          <button onClick={() => handleUpload}>Upload</button>
-        </div>
+        p
+      </button>
+      <div
+        style={{
+          backgroundColor: "#191919",
+          fontFamily: "Josefin Sans",
+          height: "64px",
+          display: "flex",
+          userSelect: "none",
+          alignItems: "center",
+          paddingLeft: "256px",
+          flexDirection: "row-reverse",
+        }}
+      >
+        <p
+          style={{
+            color: "#cecece",
+            height: "32px",
+            fontSize: "32px",
+            marginRight: "32px",
+          }}
+        >
+          <u>PenWell,WriteWell</u>
+        </p>
+        <button
+          className="btn-basic"
+          style={{
+            backgroundColor: "#393e46",
+            color: "#cecece",
+            height: "32px",
+            minWidth: "128px",
+            marginRight: "16px",
+            borderRadius: "4px",
+          }}
+          onClick={() => router.push("/")}
+        >
+          General
+        </button>
+        <button
+          className="btn-basic"
+          style={{
+            backgroundColor: "#393e46",
+            color: "#cecece",
+            height: "32px",
+            minWidth: "128px",
+            marginRight: "16px",
+            borderRadius: "4px",
+          }}
+          onClick={() => {
+            handleUpload;
+          }}
+        >
+          Upload
+        </button>
       </div>
     </>
   );

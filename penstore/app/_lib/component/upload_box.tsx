@@ -16,7 +16,6 @@ export const UploadMenu: React.FC<IUploadMenuProps> = ({ x, y, closeMenu }) => {
         top: x,
         left: y,
         zIndex: "80",
-        position: "absolute",
         transform: "translate(-25%, 3%)",
       }}
     >

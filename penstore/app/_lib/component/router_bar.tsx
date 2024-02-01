@@ -1,3 +1,4 @@
+import "@/app/global.css";
 import { NextRouter } from "next/router";
 import { ArticleIcon, PatternIcon, ProfileIcon, SettingIcon } from "./svg";
 
@@ -10,17 +11,21 @@ const PUSH = {
 
 interface IRouterProps {
   router: NextRouter;
+  closeMenu: () => void;
 }
 
-export const RouterBar: React.FC<IRouterProps> = ({ router }) => {
+export const RouterBar: React.FC<IRouterProps> = ({ router, closeMenu }) => {
   return (
     <div>
       {Object.entries(PUSH).map(([key, value]) => {
         return (
           <button
+            className="btn-basic"
             key={key}
+            style={{ margin: "4px", backgroundColor: "#393e46" }}
             onClick={() => {
               router.push(`${value[0]}`);
+              closeMenu();
             }}
           >
             {value[1]}

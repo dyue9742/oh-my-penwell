@@ -1,4 +1,4 @@
-import {Dropzone}from "./upload_field";
+import { Dropzone } from "./upload_field";
 
 interface IReadyUploadProps {
   submit: () => void;

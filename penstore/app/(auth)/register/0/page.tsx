@@ -1,8 +1,10 @@
 "use client";
 
+import { LockIcon, UserIcon } from "@/app/_lib/component/svg";
+import { createRef, useEffect, useState } from "react";
 import { AxiosInstance } from "axios";
 import Link from "next/link";
-import { createRef, useEffect, useState } from "react";
+import "@/app/global.css";
 
 interface SigninProps {
   inst: AxiosInstance;
@@ -57,37 +59,67 @@ const Signin: React.FC<SigninProps> = ({ inst }) => {
   }, [email, passw, submit]);
 
   return (
-    <>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div>
-        <div>
-          <div
-            style={{ display: "flex", flexDirection: "row", paddingTop: "8px" }}
-          >
-            Email
-            <input ref={email} autoFocus={true} />
-          </div>
-          <div
-            style={{ display: "flex", flexDirection: "row", paddingTop: "8px" }}
-          >
-            Password
-            <input ref={passw} autoFocus={true} />
-          </div>
+        <div
+          style={{
+            paddingTop: "8px",
+            width: "256px",
+            height: "32px",
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "row",
+          }}
+        >
+          <UserIcon />
+          <input
+            ref={email}
+            autoFocus={true}
+            style={{ marginLeft: "16px", fontFamily: "M PLUS Code Latin" }}
+          />
         </div>
-        <div style={{ marginTop: "32px" }}>
-          <button type="submit" onClick={(submit) => !submit}>
+        <div
+          style={{
+            paddingTop: "8px",
+            width: "256px",
+            height: "32px",
+            display: "flex",
+            alignItems: "center",
+            flexDirection: "row",
+          }}
+        >
+          <LockIcon />
+          <input
+            ref={passw}
+            style={{ marginLeft: "16px", fontFamily: "M PLUS Code Latin" }}
+          />
+        </div>
+      </div>
+      <div
+        style={{
+          fontFamily: "M PLUS Code Latin",
+          display: "flex",
+          marginTop: "32px",
+          alignItems: "center",
+          flexDirection: "row",
+          justifyContent: "left",
+        }}
+      >
+        <div style={{ bottom: 0 }}>
+          <button
+            className="btn-basic"
+            type="submit"
+            style={{ fontSize: "16px", color: "#d2d2d2" }}
+            onClick={(submit) => !submit}
+          >
             Sign in!
           </button>
         </div>
-        <Link
-          href="/register/1"
-          style={{
-            paddingLeft: "8px",
-            fontFamily: "M PLUS Code Latin",
-            fontSize: "16px",
-          }}
-        ></Link>
+        <div style={{ fontSize: "16px", marginLeft: "16px" }}>
+          <Link href="/register/1">Sign up!</Link>
+        </div>
       </div>
-    </>
+    </div>
   );
 };
 

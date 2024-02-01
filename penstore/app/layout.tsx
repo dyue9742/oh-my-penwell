@@ -26,11 +26,20 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           rel="stylesheet"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@100&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body
+        style={{
+          backgroundColor: "#323232",
+          margin: 0,
+          padding: 0,
+          minWidth: "1024px",
+        }}
+      >
+        {children}
+      </body>
     </html>
   );
 }
